@@ -1,33 +1,27 @@
 package GetVersion;
+
 import java.util.ArrayList;
 
 public class HandleVersion {
 
-    static String all = "before 2.1.6, 2.2.x through 2.3.x, ";
-    static String before = "before 2.1.6";
-    static String through = "2.2.x through 2.3.x";
-    static String abeforeB = "and 2.4.x before 2.4.15";
-
-    static String Codepath = "C:\\Users\\yytang\\Desktop\\tar文件";
-    static String softwareName = "ffmpeg-";
     static CheckDiff checkDiff = new CheckDiff();
 
-    public static void main(String[] args) throws Exception {
-        HandleVersion handleVersion = new HandleVersion();
-        ArrayList<String> versions = handleVersion.getCodeVersion(abeforeB);
-        for (String string : versions) {
-            System.out.println(string);
-        }
-    }
+    /**
+     * 解析software version格式，获取满足条件的软件版本列，支持“ before 2.1.6, 2.2.x through
+     * 2.3.x，and 2.4.x before 2.4.15”
+     * 
+     * @param versionList
+     *            所有版本列
+     * @param excelVersion
+     *            版本区间
+     * @return 满足版本区间版本列
+     * @throws Exception
+     */
+    //
+    public ArrayList<String> getCodeVersion(ArrayList<String> versionList, String excelVersion)
+            throws Exception {
 
-    // 解析software version格式，获取满足条件的软件版本列，支持“ before 2.1.6, 2.2.x through
-    // 2.3.x，and 2.4.x before 2.4.15”
-    public ArrayList<String> getCodeVersion(String excelVersion) throws Exception {
         ArrayList<String> codeVersions = new ArrayList<String>();
-        ArrayList<String> fileList = checkDiff.getFileName(Codepath);
-        for (int i = 0; i < fileList.size(); i++) {
-            fileList.set(i, fileList.get(i).replaceAll(softwareName, ""));
-        }
 
         // 无意义字符处理 String test = "2.0.0";
         excelVersion = filterStr(excelVersion);
@@ -35,14 +29,14 @@ public class HandleVersion {
         String[] versionStr = excelVersion.split(" ");
         // before 2.1.6情况
         if (versionStr.length == 2) {
-            for (String string : fileList) {
+            for (String string : versionList) {
                 if (compareVersion(string, versionStr[1]) < 0)
                     codeVersions.add(string);
             }
         }
         // 2.4.x before 2.4.4 情况
         if (versionStr.length == 3 && versionStr[1].equals("before")) {
-            for (String string : fileList) {
+            for (String string : versionList) {
                 if (compareVersion(string, versionStr[0]) == 0
                         && compareVersion(string, versionStr[2]) < 0)
                     codeVersions.add(string);
@@ -50,7 +44,7 @@ public class HandleVersion {
         }
         // 2.2.x through 2.3.x 情况 // *
         if (versionStr.length == 3 && versionStr[1].equals("through")) {
-            for (String string : fileList) {
+            for (String string : versionList) {
                 if (compareVersion(string, versionStr[0]) == 0
                         || compareVersion(string, versionStr[2]) == 0)
                     codeVersions.add(string);
@@ -59,9 +53,15 @@ public class HandleVersion {
         return codeVersions;
     }
 
-    // 过滤无意义词，比如and
+    /**
+     * 过滤无意义词，比如and；或者其他语义处理（待扩充）
+     * 
+     * @param versionStr
+     *            需要过滤的原始版本区间
+     * @return
+     */
     String filterStr(String versionStr) {
-        String fiterVersion = "";
+        String fiterVersion = versionStr;
         String andStr = "and ";
         if (versionStr.contains(andStr)) {
             fiterVersion = versionStr.replaceAll(andStr, "");
@@ -103,5 +103,26 @@ public class HandleVersion {
         // 如果已经分出大小，则直接返回，如果未分出大小，则再比较位数，有子版本的为大；
         diff = (diff != 0) ? diff : versionArray1.length - versionArray2.length;
         return diff;
+    }
+
+    public static void main(String[] args) throws Exception {
+        // String all =
+        // "before 2.1.6, 2.2.x through 2.3.x,and 2.4.x before 2.4.15 ";
+        // String before = "before 2.1.6";
+        // String through = "2.2.x through 2.3.x";
+        String abeforeB = "and 2.4.x before 2.4.15";
+        String Codepath = "C:\\Users\\yytang\\Desktop\\tar文件";
+        String versionPrefix = "ffmpeg-";
+        HandleVersion handleVersion = new HandleVersion();
+        ArrayList<String> fileList = checkDiff.getFileName(Codepath);
+
+        fileList = checkDiff.getFileVersions(fileList, versionPrefix);
+        System.out.println(fileList.size() + "\nbegin");
+
+        ArrayList<String> versions = handleVersion.getCodeVersion(fileList, abeforeB);
+        for (String string : versions) {
+            System.out.println(string);
+        }
+        System.out.println("end");
     }
 }
