@@ -40,30 +40,47 @@ public class CheckDiff {
         return content;
     }
 
-    public String handleDiff(String filePath) {
-        String strFilter = "";
+    /**
+     * diff文件多函数处理，提取代码列
+     * 
+     * @param filePath
+     * @return
+     */
+    public ArrayList<String> handleDiff(String filePath) {
+        ArrayList<String> strFilterList = new ArrayList<String>();
+
         String strOriginal = utils.readText(filePath);
         if (strOriginal.contains("\r\n")) {
             strOriginal = strOriginal.replace("\r\n", "\n");
         }
         String[] strs = strOriginal.split("\n");
         for (int i = 0; i < strs.length; i++) {
-            String temp = strs[i];
             // 一个diff匹配 @@ 划分
-            if (temp.contains("@@")) {
-                if (strs[i + 1].contains("}")) {
+            if (strs[i].contains("@@")) {
+                String strFilter = "";
+                i++;
+                if (strs[i].contains("}")) {
                     i++;
                 }
-                continue;
+                while (i < strs.length && !strs[i].contains("@@")) {
+
+                    String temp = strs[i];
+                    if (temp.subSequence(0, 1).equals("+") && !temp.contains("+++")) {
+                        i++;
+                        continue;
+                    } else {
+                        temp = temp.substring(1);
+                    }
+
+                    strFilter += (strFilter.length() > 0 ? "\n" + temp : temp);
+                    i++;
+                }
+                i--;
+                strFilterList.add(strFilter);
             }
-            if (temp.subSequence(0, 1).equals("+") && !temp.contains("+++")) {
-                continue;
-            } else {
-                temp = temp.substring(1);
-            }
-            strFilter += (strFilter.length() > 0 ? "\n" + temp : temp);
+
         }
-        return strFilter;
+        return strFilterList;
     }
 
     /**
@@ -78,24 +95,24 @@ public class CheckDiff {
      *            版本列
      * @return 满足条件的版本列
      */
-    public ArrayList<String> getVersionContainDiff(String diffStr, String codepath,
+    public ArrayList<String> getVersionContainDiff(String cve, String codepath,
             String versionPrefix, String fileName, ArrayList<String> versionList) {
+        ArrayList<String> diffStrList = handleDiff(cve);
         ArrayList<String> versionsTrue = new ArrayList<String>();
+        int flag = 1;
         for (String version : versionList) {
+            flag = 1;
             String codeStr = getCodeFile(versionPrefix, codepath, version, fileName);
-            if (codeStr.contains(diffStr))
+            for (String diffStr : diffStrList)
+                if (!codeStr.contains(diffStr)) {
+                    flag = 0;
+                    break;
+                }
+            if (flag > 0) {
                 versionsTrue.add(version);
+            }
         }
         return versionsTrue;
-    }
-
-    boolean matchCode(String diffPath, String codePath) {
-        String diffStr = handleDiff(diffPath);
-        String codeStr = utils.readText(codePath);
-        // TODO check是否包含该漏洞
-        if (!codeStr.contains(diffStr))
-            return false;
-        return true;
     }
 
     public static void main(String[] args) {
@@ -107,21 +124,19 @@ public class CheckDiff {
         // String diffPath =
         // "C:\\Users\\wt\\Desktop\\实验室work-tyy\\需完成的工作\\测试数据\\Ffmpeg\\Ffmpeg-1.1diff";
         String diffPath2 = "C:\\Users\\yytang\\Desktop\\all\\Ffmpeg-1.1diff";
-        String cve = diffPath2 + File.separator + "CVE-2013-7015.txt";
+        // String cve = diffPath2 + File.separator + "CVE-2013-7015.txt";
+        // 多个函数测试
+        String cve2 = diffPath2 + File.separator + "CVE-2013-7023.txt";
         String versionPrefix = "ffmpeg-";
         System.out.println("begin");
         CheckDiff checkDiff = new CheckDiff();
-        String diffStr = checkDiff.handleDiff(cve);
 
         ArrayList<String> fileList = checkDiff.getFileName(codepath2);
         ArrayList<String> versionList = checkDiff.getFileVersions(fileList, versionPrefix);
         // 满足区间条件的版本列
 
-        ArrayList<String> versions = checkDiff.getVersionContainDiff(diffStr, codepath2,
+        ArrayList<String> versions = checkDiff.getVersionContainDiff(cve2, codepath2,
                 versionPrefix, filePath, versionList);
-        for (String version : versions) {
-            System.out.println(version);
-        }
         System.out.println(versions.size() + "end");
     }
 }

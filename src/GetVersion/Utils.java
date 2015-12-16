@@ -174,6 +174,11 @@ public class Utils {
         FileInputStream fis = null;
         byte[] buffer = null;
         try {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                System.out.println(filePath + "文件找不到");
+                return buffer;
+            }
             fis = new FileInputStream(filePath);
             buffer = new byte[fis.available()];
             fis.read(buffer);
@@ -214,7 +219,8 @@ public class Utils {
      * @return 文件路径
      */
     public String readText(String filePath) {
-        return new String(readFile(filePath));
+        String text = "";
+        return readFile(filePath) == null ? text : new String(readFile(filePath));
     }
 
     /**

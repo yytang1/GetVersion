@@ -1,10 +1,16 @@
 package GetVersion;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.util.ArrayList;
 
+import org.apache.poi.POIXMLDocument;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -12,6 +18,19 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelUtil {
+
+    public Workbook create(InputStream inp) throws IOException, InvalidFormatException {
+        if (!inp.markSupported()) {
+            inp = new PushbackInputStream(inp, 8);
+        }
+        if (POIFSFileSystem.hasPOIFSHeader(inp)) {
+            return new HSSFWorkbook(inp);
+        }
+        if (POIXMLDocument.hasOOXMLHeader(inp)) {
+            return new XSSFWorkbook(OPCPackage.open(inp));
+        }
+        throw new IllegalArgumentException("你的excel版本目前poi解析不了");
+    }
 
     /**
      * 读取Excel中所有行
@@ -21,18 +40,21 @@ public class ExcelUtil {
      * @param sheetnum
      *            sheet页码
      * @return 返回Excel行数组
+     * @throws InvalidFormatException
      */
-    public ArrayList<Row> readExcelHssfRows(String filePath, int sheetnum) {
+    public ArrayList<Row> readExcelHssfRows(String filePath, int sheetnum)
+            throws InvalidFormatException {
         ArrayList<Row> rows = new ArrayList<Row>();
         int rowIndex = 0;
         try {
             InputStream in = new FileInputStream(filePath);
             Workbook workbook = null;
-            if (filePath.endsWith("xlsx")) {
-                workbook = new XSSFWorkbook(in);
-            } else {
-                workbook = new HSSFWorkbook(in);
-            }
+            workbook = create(in);
+            // if (filePath.endsWith("xlsx")) {
+            // workbook = new XSSFWorkbook(in);
+            // } else {
+            // workbook = new HSSFWorkbook(in);
+            // }
             Sheet sheet = workbook.getSheetAt(sheetnum);
             while (true) {
                 Row row = sheet.getRow(rowIndex);

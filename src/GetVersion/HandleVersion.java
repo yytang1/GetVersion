@@ -12,42 +12,46 @@ public class HandleVersion {
      * 
      * @param versionList
      *            所有版本列
-     * @param excelVersion
-     *            版本区间
+     * @param excelVersionStr
+     *            版本区间，多个版本区间，以逗号区分
      * @return 满足版本区间版本列
      * @throws Exception
      */
     //
-    public ArrayList<String> getCodeVersion(ArrayList<String> versionList, String excelVersion)
+    public ArrayList<String> getCodeVersion(ArrayList<String> versionList, String excelVersionStr)
             throws Exception {
 
         ArrayList<String> codeVersions = new ArrayList<String>();
-
         // 无意义字符处理 String test = "2.0.0";
-        excelVersion = filterStr(excelVersion);
+        // 多个版本区间，逗号划分
+        String[] excelVersions = excelVersionStr.split(",");
+        for (int i = 0; i < excelVersions.length; i++) {
+            String excelVersion = excelVersions[i];
+            excelVersion = filterStr(excelVersion);
 
-        String[] versionStr = excelVersion.split(" ");
-        // before 2.1.6情况
-        if (versionStr.length == 2) {
-            for (String string : versionList) {
-                if (compareVersion(string, versionStr[1]) < 0)
-                    codeVersions.add(string);
+            String[] versionStr = excelVersion.split(" ");
+            // before 2.1.6情况
+            if (versionStr.length == 2) {
+                for (String string : versionList) {
+                    if (compareVersion(string, versionStr[1]) < 0)
+                        codeVersions.add(string);
+                }
             }
-        }
-        // 2.4.x before 2.4.4 情况
-        if (versionStr.length == 3 && versionStr[1].equals("before")) {
-            for (String string : versionList) {
-                if (compareVersion(string, versionStr[0]) == 0
-                        && compareVersion(string, versionStr[2]) < 0)
-                    codeVersions.add(string);
+            // 2.4.x before 2.4.4 情况
+            if (versionStr.length == 3 && versionStr[1].equals("before")) {
+                for (String string : versionList) {
+                    if (compareVersion(string, versionStr[0]) == 0
+                            && compareVersion(string, versionStr[2]) < 0)
+                        codeVersions.add(string);
+                }
             }
-        }
-        // 2.2.x through 2.3.x 情况 // *
-        if (versionStr.length == 3 && versionStr[1].equals("through")) {
-            for (String string : versionList) {
-                if (compareVersion(string, versionStr[0]) == 0
-                        || compareVersion(string, versionStr[2]) == 0)
-                    codeVersions.add(string);
+            // 2.2.x through 2.3.x 情况 // *
+            if (versionStr.length == 3 && versionStr[1].equals("through")) {
+                for (String string : versionList) {
+                    if (compareVersion(string, versionStr[0]) == 0
+                            || compareVersion(string, versionStr[2]) == 0)
+                        codeVersions.add(string);
+                }
             }
         }
         return codeVersions;
@@ -66,7 +70,7 @@ public class HandleVersion {
         if (versionStr.contains(andStr)) {
             fiterVersion = versionStr.replaceAll(andStr, "");
         }
-        return fiterVersion;
+        return fiterVersion.trim();
     }
 
     /**
@@ -106,11 +110,10 @@ public class HandleVersion {
     }
 
     public static void main(String[] args) throws Exception {
-        // String all =
-        // "before 2.1.6, 2.2.x through 2.3.x,and 2.4.x before 2.4.15 ";
+        String all = "2.1.x before 2.1.6, 2.2.x through 2.3.x,and 2.4.x before 2.4.15 ";
         // String before = "before 2.1.6";
         // String through = "2.2.x through 2.3.x";
-        String abeforeB = "and 2.4.x before 2.4.15";
+        // String abeforeB = "and 2.4.x before 2.4.15";
         String Codepath = "C:\\Users\\yytang\\Desktop\\tar文件";
         String versionPrefix = "ffmpeg-";
         HandleVersion handleVersion = new HandleVersion();
@@ -119,7 +122,7 @@ public class HandleVersion {
         fileList = checkDiff.getFileVersions(fileList, versionPrefix);
         System.out.println(fileList.size() + "\nbegin");
 
-        ArrayList<String> versions = handleVersion.getCodeVersion(fileList, abeforeB);
+        ArrayList<String> versions = handleVersion.getCodeVersion(fileList, all);
         for (String string : versions) {
             System.out.println(string);
         }

@@ -7,8 +7,7 @@ import GetVersion.VulnerabilityInfo.VulnerInfo;
 
 public class ExecuteExcel {
 
-    public void executeExcel(String diffPath, String codePath, String excelPath,
-            String versionPrefix) throws Exception {
+    public void executeExcel(String diffPath, String codePath, String excelPath) throws Exception {
 
         VulnerabilityInfo vulnerabilityInfo = new VulnerabilityInfo();
         CheckDiff checkDiff = new CheckDiff();
@@ -16,8 +15,9 @@ public class ExecuteExcel {
 
         ArrayList<VulnerInfo> vulnerInfos = vulnerabilityInfo.readInfoFromExcel(excelPath);
         for (VulnerInfo vulnerInfo : vulnerInfos) {
+            String versionPrefix = vulnerInfo.softeware + "-";
+            System.out.println(vulnerInfo.cve);
             String diffFilePath = diffPath + File.separator + vulnerInfo.cve + ".txt";
-            String diffStr = checkDiff.handleDiff(diffFilePath);
 
             // 源码所有版本文件名列
             ArrayList<String> fileList = checkDiff.getFileName(codePath);
@@ -27,23 +27,33 @@ public class ExecuteExcel {
             ArrayList<String> versions = handleVersion.getCodeVersion(versionList,
                     vulnerInfo.softwareVersion);
 
-            ArrayList<String> versionsR = checkDiff.getVersionContainDiff(diffStr, codePath,
+            vulnerInfo.containVersions = checkDiff.getVersionContainDiff(diffFilePath, codePath,
                     versionPrefix, vulnerInfo.fileName, versions);
-            vulnerInfo.containVersions = (ArrayList<String>) versionsR.clone();
-
-            System.out.println(versionsR);
         }
+        printResult(vulnerInfos);
+        vulnerabilityInfo.writeResultToExcel(vulnerInfos, excelPath);
     }
 
-    public static void main(String[] args) {
+    void printResult(ArrayList<VulnerInfo> vulnerInfos) {
+        for (VulnerInfo vulnerInfo : vulnerInfos) {
+            System.out.println("cve:" + vulnerInfo.cve);
+            System.out.println("versions:" + vulnerInfo.containVersions);
+        }
+        System.out.println(vulnerInfos.size());
+    }
+
+    public static void main(String[] args) throws Exception {
         // TODO Auto-generated method stub
-        String path = "C:\\Users\\wt\\Desktop\\实验室work-tyy\\";
+        // String path = "C:\\Users\\wt\\Desktop\\实验室work-tyy\\";
+        String path = "C:\\Users\\yytang\\Desktop\\all\\";
         String diffPath1 = path + "Ffmpeg-1.1diff";
-        String codePath1 = "";
-        String excelPath1 = path + "all\\test.xlsx";
+        // String codePath1 = "C:\\Users\\wt\\Desktop\\ffmpeg";
+        String codePath1 = "C:\\Users\\yytang\\Desktop\\tar文件";
+        String excelPath1 = path + "all\\工作簿1.xlsx";
         ExecuteExcel executeExcel = new ExecuteExcel();
-        String versionPrefix = "ffmpeg-";
-        // executeExcel.executeExcel(diffPath1, codePath1, excelPath1);
+        // String versionPrefix = "ffmpeg-";
+
+        executeExcel.executeExcel(diffPath1, codePath1, excelPath1);
         System.out.println("end");
     }
 }
