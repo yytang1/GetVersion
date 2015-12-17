@@ -28,7 +28,9 @@ public class ExecuteExcel {
                     vulnerInfo.softwareVersion);
 
             vulnerInfo.containVersions = checkDiff.getVersionContainDiff(diffFilePath, codePath,
-                    versionPrefix, vulnerInfo.fileName, versions);
+                    versionPrefix, vulnerInfo.fileName, versions, true);
+            vulnerInfo.errorVersions = checkDiff.getVersionContainDiff(diffFilePath, codePath,
+                    versionPrefix, vulnerInfo.fileName, versions, false);
         }
         printResult(vulnerInfos);
         vulnerabilityInfo.writeResultToExcel(vulnerInfos, excelPath);
@@ -38,20 +40,19 @@ public class ExecuteExcel {
         for (VulnerInfo vulnerInfo : vulnerInfos) {
             System.out.println("cve:" + vulnerInfo.cve);
             System.out.println("versions:" + vulnerInfo.containVersions);
+            System.out.println("ErrorVersions:" + vulnerInfo.errorVersions);
         }
         System.out.println(vulnerInfos.size());
     }
 
     public static void main(String[] args) throws Exception {
-        // TODO Auto-generated method stub
         // String path = "C:\\Users\\wt\\Desktop\\实验室work-tyy\\";
         String path = "C:\\Users\\yytang\\Desktop\\all\\";
         String diffPath1 = path + "Ffmpeg-1.1diff";
         // String codePath1 = "C:\\Users\\wt\\Desktop\\ffmpeg";
-        String codePath1 = "C:\\Users\\yytang\\Desktop\\tar文件";
-        String excelPath1 = path + "all\\工作簿1.xlsx";
+        String codePath1 = path + "tar文件";
+        String excelPath1 = path + "test.xlsx";
         ExecuteExcel executeExcel = new ExecuteExcel();
-        // String versionPrefix = "ffmpeg-";
 
         executeExcel.executeExcel(diffPath1, codePath1, excelPath1);
         System.out.println("end");

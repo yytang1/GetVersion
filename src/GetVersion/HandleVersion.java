@@ -110,11 +110,11 @@ public class HandleVersion {
     }
 
     public static void main(String[] args) throws Exception {
-        String all = "2.1.x before 2.1.6, 2.2.x through 2.3.x,and 2.4.x before 2.4.15 ";
+        String all = "before 2.1.6";
         // String before = "before 2.1.6";
         // String through = "2.2.x through 2.3.x";
         // String abeforeB = "and 2.4.x before 2.4.15";
-        String Codepath = "C:\\Users\\yytang\\Desktop\\tar文件";
+        String Codepath = "C:\\Users\\yytang\\Desktop\\all\\tar文件\\";
         String versionPrefix = "ffmpeg-";
         HandleVersion handleVersion = new HandleVersion();
         ArrayList<String> fileList = checkDiff.getFileName(Codepath);

@@ -5,7 +5,8 @@ import java.util.ArrayList;
 
 public class CheckDiff {
 
-    static Utils utils = new Utils();
+    Utils utils = new Utils();
+    HandDiff handDiff = new HandDiff();
 
     public ArrayList<String> getFileName(String filepath) {
         File file = new File(filepath);
@@ -41,49 +42,6 @@ public class CheckDiff {
     }
 
     /**
-     * diff文件多函数处理，提取代码列
-     * 
-     * @param filePath
-     * @return
-     */
-    public ArrayList<String> handleDiff(String filePath) {
-        ArrayList<String> strFilterList = new ArrayList<String>();
-
-        String strOriginal = utils.readText(filePath);
-        if (strOriginal.contains("\r\n")) {
-            strOriginal = strOriginal.replace("\r\n", "\n");
-        }
-        String[] strs = strOriginal.split("\n");
-        for (int i = 0; i < strs.length; i++) {
-            // 一个diff匹配 @@ 划分
-            if (strs[i].contains("@@")) {
-                String strFilter = "";
-                i++;
-                if (strs[i].contains("}")) {
-                    i++;
-                }
-                while (i < strs.length && !strs[i].contains("@@")) {
-
-                    String temp = strs[i];
-                    if (temp.subSequence(0, 1).equals("+") && !temp.contains("+++")) {
-                        i++;
-                        continue;
-                    } else {
-                        temp = temp.substring(1);
-                    }
-
-                    strFilter += (strFilter.length() > 0 ? "\n" + temp : temp);
-                    i++;
-                }
-                i--;
-                strFilterList.add(strFilter);
-            }
-
-        }
-        return strFilterList;
-    }
-
-    /**
      * 
      * @param diffStr
      *            diff文件内容
@@ -96,9 +54,12 @@ public class CheckDiff {
      * @return 满足条件的版本列
      */
     public ArrayList<String> getVersionContainDiff(String cve, String codepath,
-            String versionPrefix, String fileName, ArrayList<String> versionList) {
-        ArrayList<String> diffStrList = handleDiff(cve);
+            String versionPrefix, String fileName, ArrayList<String> versionList, boolean isOld) {
+        ArrayList<String> diffStrList = handDiff.handleDiff(cve, fileName, isOld);
         ArrayList<String> versionsTrue = new ArrayList<String>();
+        if (diffStrList.size() < 1) {
+            return versionsTrue;
+        }
         int flag = 1;
         for (String version : versionList) {
             flag = 1;
@@ -118,7 +79,7 @@ public class CheckDiff {
     public static void main(String[] args) {
         // TODO Auto-generated method stub
         // String codepath = "C:\\Users\\wt\\Desktop\\ffmpeg";
-        String codepath2 = "C:\\Users\\yytang\\Desktop\\tar文件";
+        String codepath2 = "C:\\Users\\yytang\\Desktop\\all\\tar文件";
         // excel 中 获取的函数文件名
         String filePath = "libavcodec\\flashsv.c";
         // String diffPath =
@@ -136,7 +97,12 @@ public class CheckDiff {
         // 满足区间条件的版本列
 
         ArrayList<String> versions = checkDiff.getVersionContainDiff(cve2, codepath2,
-                versionPrefix, filePath, versionList);
+                versionPrefix, filePath, versionList, false);
         System.out.println(versions.size() + "end");
+        System.out.println(versions);
+        ArrayList<String> versions2 = checkDiff.getVersionContainDiff(cve2, codepath2,
+                versionPrefix, filePath, versionList, true);
+        System.out.println(versions2.size() + "end");
+        System.out.println(versions2);
     }
 }
