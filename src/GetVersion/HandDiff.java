@@ -35,9 +35,7 @@ public class HandDiff {
         // 如果isOld，则去掉"+"行
         String plus = (isOld ? "+" : "-");
         String strOriginal = utils.readText(filePath);
-        if (strOriginal.contains("\r\n")) {
-            strOriginal = strOriginal.replace("\r\n", "\n");
-        }
+        strOriginal = handleLineBreak(strOriginal);
         String[] strs = strOriginal.split("\n");
         for (int i = 0; i < strs.length; i++) {
             // 一个diff匹配 @@ 划分
@@ -72,6 +70,20 @@ public class HandDiff {
         return strFilterList;
     }
 
+    /**
+     * 将window下换行符“\r\n”替换为“\n”
+     * 
+     * @param string
+     *            需要处理的字符串
+     * @return
+     */
+    public String handleLineBreak(String string) {
+        if (string.contains("\r\n")) {
+            string = string.replace("\r\n", "\n");
+        }
+        return string;
+    }
+
     public static void main(String[] args) {
         // TODO Auto-generated method stub
         HandDiff handDiff = new HandDiff();
@@ -82,16 +94,17 @@ public class HandDiff {
         // 多个函数
         // String cve2 = "CVE-2013-7023.txt";
         // 多个函数
-        String cve3 = "CVE-2014-2099.txt";
+        // String cve3 = "CVE-2014-2099.txt";
         // 多个文件CVE-2011-1691;CVE-2011-1202
-        String cve4 = "CVE-2013-2912.txt";
-        String cve5 = "CVE-2013-2911.txt";
-        String cve = "CVE-2013-7015.txt";
+        // String cve4 = "CVE-2013-2912.txt";
+        // String cve5 = "CVE-2013-2911.txt";
+        // String cve = "CVE-2013-7015.txt";
         String cve6 = "CVE-2011-3936.txt";
         String fileName6 = "libavformat/dv.c";
         String fileName = "libavcodec/flashsv.c";
-        String fileName2 = "Source/core/xml/XSLStyleSheetLibxslt.cpp";
-        String fileName3 = "content\\renderer\\pepper\\pepper_in_process_router.cc";
+        // String fileName2 = "Source/core/xml/XSLStyleSheetLibxslt.cpp";
+        // String fileName3 =
+        // "content\\renderer\\pepper\\pepper_in_process_router.cc";
         System.out.println(fileName);
         ArrayList<String> diffList = handDiff.handleDiff(diffPath2 + File.separator + cve6,
                 fileName6, true);

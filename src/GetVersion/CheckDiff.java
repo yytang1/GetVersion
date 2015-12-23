@@ -7,6 +7,7 @@ public class CheckDiff {
 
     Utils utils = new Utils();
     HandDiff handDiff = new HandDiff();
+    Common common = new Common();
 
     public ArrayList<String> getFileName(String filepath) {
         File file = new File(filepath);
@@ -35,10 +36,20 @@ public class CheckDiff {
     private String getCodeFile(String versionPrefix, String codepath, String version,
             String fileName) {
         String content = "";
-        String path = codepath + File.separator + versionPrefix + version + File.separator
-                + fileName;
+        String path = common.getCodefilePath(codepath, versionPrefix, version, fileName);
         content = utils.readText(path);
         return content;
+    }
+
+    public ArrayList<String> getVersionFileExist(String codePath, String versionPrefix,
+            String fileName, ArrayList<String> versionList) {
+        ArrayList<String> versionsTrue = new ArrayList<String>();
+        for (String version : versionList) {
+            String filePath = common.getCodefilePath(codePath, versionPrefix, version, fileName);
+            if (utils.fileExist(filePath))
+                versionsTrue.add(version);
+        }
+        return versionsTrue;
     }
 
     /**

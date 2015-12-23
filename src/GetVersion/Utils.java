@@ -70,6 +70,13 @@ public class Utils {
         return file.delete();
     }
 
+    public boolean fileExist(String filePath) {
+        File file = new File(filePath);
+        if (file.exists())
+            return true;
+        return false;
+    }
+
     /**
      * 创建文件或目录
      * 
@@ -230,6 +237,8 @@ public class Utils {
      *            文本内容
      * @param filePath
      *            文件路径
+     * @param append
+     *            是否追加,{@code true} 表示追加,[{@code false} 表示覆写
      */
     public void writeText(String text, String filePath, boolean append) {
         byte[] buffer = null;
