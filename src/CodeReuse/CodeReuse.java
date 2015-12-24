@@ -21,7 +21,8 @@ public class CodeReuse {
         String code = utils.readText(filePath);
         String function = "";
         String re = "^[\\w\\s]+[\\s\\*]+" + functionName
-                + "\\s*\\([\\w\\[\\w\\]*\\s\\*\\,]*\\)\\s*\\{";
+        // + "\\s*\\([\\w\\[\\w\\]*\\s\\*\\,]*\\)\\s*\\{";
+                + "\\s*\\([\\s\\S]*?\\)\\s*\\{";
         Pattern pattern = Pattern.compile(re, Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(code);
         if (matcher.find()) {
@@ -56,6 +57,7 @@ public class CodeReuse {
         ArrayList<String> diffList = handDiff.handleDiff(diffFilePath, vulnerInfo.fileName, true);
 
         for (String functionName : functionList) {
+            System.out.println(functionName);
             int num = 0;
             for (String version : versions) {
                 // 如果超过 10个 ，退出该函数
@@ -66,14 +68,20 @@ public class CodeReuse {
                 String functionCode = getFunction(functionPath, functionName);
                 String path = common.getMarkFunctionPath(resultPath, vulnerInfo.cve, functionName);
                 // 找到不完全匹配的函数
+                int flag = 0;
                 for (String diffStr : diffList) {
                     String markFunction = matchDiffLine(functionCode, diffStr);
                     // 存在不完全匹配的函数，将不完全匹配的函数，存到txt中
                     if (markFunction.contains(common.markStr)) {
                         num++;
                         new File(path).mkdirs();
-                        utils.writeText(markFunction, path + version + ".txt", false);
-                        System.out.println(path + version + ".txt");
+                        String filePath = path + version + ".txt";
+                        if (utils.fileExist(filePath))
+                            flag++;
+                        filePath = flag > 0 ? (path + version + "(" + flag + ").txt") : path
+                                + version + ".txt";
+                        utils.writeText(markFunction, filePath, false);
+                        System.out.println(filePath);
                     }
                 }
             }

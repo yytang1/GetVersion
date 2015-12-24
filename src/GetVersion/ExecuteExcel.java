@@ -50,8 +50,8 @@ public class ExecuteExcel {
             versions.removeAll(vulnerInfo.containVersions);
             versions.removeAll(vulnerInfo.errorVersions);
             Collections.reverse(versions);
-            codeReuse.getHalfMatchFile(diffFilePath, codePath, versionPrefix, vulnerInfo, versions,
-                    resultPath);
+            codeReuse.getHalfMatchFile(diffFilePath, codePath, versionPrefix, vulnerInfo,
+                    versions, resultPath);
 
         }
         printResult(vulnerInfos);
