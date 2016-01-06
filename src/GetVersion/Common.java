@@ -4,7 +4,21 @@ import java.io.File;
 
 public class Common {
     public String markStr = "//***\r\n";
-    public int txtMaxNum=10;
+    public int txtMaxNum = 10;
+    // 正则匹配
+    public static String re_begin = "^";
+    public static String re_end = "$";
+    public static String re_version = "(([0-9]+\\.)*[0-9]+\\.)*[0-9]+";
+    public static String re_version_x = "(([0-9]+\\.)*[0-9]+\\.)*([0-9]+|x)";
+    public static String re_throughA = re_begin + "through\\s" + re_version + re_end;
+
+    public static String re_AthroughB = re_begin + re_version_x + "\\sthrough\\s" + re_version
+            + re_end;
+    public static String re_beforeA = re_begin + "before\\s" + re_version + re_end;
+    public static String re_AbeforeB = re_begin + re_version_x + "\\sbefore\\s" + re_version
+            + re_end;
+    public static String re_earlier = re_begin + re_version + "\\searlier" + re_end;
+
     public String getCodefilePath(String codePath, String versionPrefix, String version,
             String fileName) {
         return codePath + File.separator + versionPrefix + version + File.separator + fileName;

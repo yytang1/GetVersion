@@ -16,6 +16,7 @@ public class ExecuteExcel {
         CheckDiff checkDiff = new CheckDiff();
         HandleVersion handleVersion = new HandleVersion();
         CodeReuse codeReuse = new CodeReuse();
+        DealSoftware dealSoftware = new DealSoftware();
 
         ArrayList<VulnerInfo> vulnerInfos = vulnerabilityInfo.readInfoFromExcel(excelPath);
         // 复用实例代码存放路径
@@ -30,7 +31,7 @@ public class ExecuteExcel {
                 continue;
             }
             // 源码所有版本文件名列
-            ArrayList<String> fileList = checkDiff.getFileName(codePath);
+            ArrayList<String> fileList = dealSoftware.getFileName(codePath, vulnerInfo.softeware);
             // 源码所有版本列
             ArrayList<String> versionList = checkDiff.getFileVersions(fileList, versionPrefix);
             // 满足区间条件的版本列
@@ -50,8 +51,8 @@ public class ExecuteExcel {
             versions.removeAll(vulnerInfo.containVersions);
             versions.removeAll(vulnerInfo.errorVersions);
             Collections.reverse(versions);
-            codeReuse.getHalfMatchFile(diffFilePath, codePath, versionPrefix, vulnerInfo,
-                    versions, resultPath);
+            codeReuse.getHalfMatchFile(diffFilePath, codePath, versionPrefix, vulnerInfo, versions,
+                    resultPath);
 
         }
         printResult(vulnerInfos);

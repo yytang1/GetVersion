@@ -18,6 +18,7 @@ public class HandleVersion {
      * @throws Exception
      */
     //
+
     public ArrayList<String> getCodeVersion(ArrayList<String> versionList, String excelVersionStr)
             throws Exception {
 
@@ -45,11 +46,18 @@ public class HandleVersion {
                         codeVersions.add(string);
                 }
             }
-            // 2.2.x through 2.3.x 情况 // *
+            // 2.2.x through 2.3.6 情况 // *
             if (versionStr.length == 3 && versionStr[1].equals("through")) {
                 for (String string : versionList) {
                     if (compareVersion(string, versionStr[0]) == 0
                             || compareVersion(string, versionStr[2]) == 0)
+                        codeVersions.add(string);
+                }
+            }
+            // through 2.3.6 情况 // *
+            if (versionStr.length == 2 && versionStr[0].equals("through")) {
+                for (String string : versionList) {
+                    if (compareVersion(string, versionStr[1]) <= 0)
                         codeVersions.add(string);
                 }
             }
@@ -89,11 +97,13 @@ public class HandleVersion {
         String[] versionArray2 = version2.split("\\.");
         int idx = 0;
         int minLength = Math.min(versionArray1.length, versionArray2.length);// 取最小长度值
+        int len = versionArray1.length - versionArray2.length;
         int diff = 0;
         // 比较前两个数字
         while (idx < minLength) {
             if ((versionArray1[idx].equals("x") || versionArray2[idx].equals("x"))) {
                 diff = 0;
+                len = 0;
                 break;
             }
             if ((diff = versionArray1[idx].length() - versionArray2[idx].length()) != 0) {
@@ -105,27 +115,32 @@ public class HandleVersion {
             ++idx;
         }
         // 如果已经分出大小，则直接返回，如果未分出大小，则再比较位数，有子版本的为大；
-        diff = (diff != 0) ? diff : versionArray1.length - versionArray2.length;
+        diff = (diff != 0) ? diff : len;
         return diff;
     }
 
     public static void main(String[] args) throws Exception {
+        DealSoftware dealSoftware = new DealSoftware();
         String all = "before 2.1.6";
         // String before = "before 2.1.6";
         // String through = "2.2.x through 2.3.x";
         // String abeforeB = "and 2.4.x before 2.4.15";
-        String Codepath = "C:\\Users\\yytang\\Desktop\\all\\tar文件\\";
+        String test2 = "through 2.1.6";
+        String test1 = "2.x before 2.2.7";
+        String Codepath = "C:\\Users\\wt\\Desktop\\tyy\\software\\";
         String versionPrefix = "ffmpeg-";
+        String software = "ffmpeg";
         HandleVersion handleVersion = new HandleVersion();
-        ArrayList<String> fileList = checkDiff.getFileName(Codepath);
+        ArrayList<String> fileList = dealSoftware.getFileName(Codepath, software);
 
         fileList = checkDiff.getFileVersions(fileList, versionPrefix);
         System.out.println(fileList.size() + "\nbegin");
 
-        ArrayList<String> versions = handleVersion.getCodeVersion(fileList, all);
+        ArrayList<String> versions = handleVersion.getCodeVersion(fileList, test2);
         for (String string : versions) {
             System.out.println(string);
         }
-        System.out.println("end");
+        // System.out.println(handleVersion.compareVersion("2.1", "2.1.4"));
+        System.out.println(versions.size() + "end");
     }
 }

@@ -9,21 +9,6 @@ public class CheckDiff {
     HandDiff handDiff = new HandDiff();
     Common common = new Common();
 
-    public ArrayList<String> getFileName(String filepath) {
-        File file = new File(filepath);
-        String[] filelist = file.list();
-        ArrayList<String> fileLists = new ArrayList<String>();
-
-        // TODO 选出文件夹
-        for (int i = 0; i < filelist.length; i++) {
-            File readfile = new File(filepath + "\\" + filelist[i]);
-            if (!readfile.isFile()) {
-                fileLists.add(filelist[i]);
-            }
-        }
-        return fileLists;
-    }
-
     public ArrayList<String> getFileVersions(ArrayList<String> fileLists, String versionPrefix) {
 
         ArrayList<String> versionLists = new ArrayList<String>();
@@ -88,6 +73,7 @@ public class CheckDiff {
     }
 
     public static void main(String[] args) {
+        DealSoftware dealSoftware = new DealSoftware();
         // TODO Auto-generated method stub
         // String codepath = "C:\\Users\\wt\\Desktop\\ffmpeg";
         String codepath2 = "C:\\Users\\yytang\\Desktop\\all\\tar文件";
@@ -102,8 +88,8 @@ public class CheckDiff {
         String versionPrefix = "ffmpeg-";
         System.out.println("begin");
         CheckDiff checkDiff = new CheckDiff();
-
-        ArrayList<String> fileList = checkDiff.getFileName(codepath2);
+        String software = "ffmpeg";
+        ArrayList<String> fileList = dealSoftware.getFileName(codepath2, software);
         ArrayList<String> versionList = checkDiff.getFileVersions(fileList, versionPrefix);
         // 满足区间条件的版本列
 
