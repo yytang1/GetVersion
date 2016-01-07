@@ -1,6 +1,8 @@
 package GetVersion;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HandleVersion {
 
@@ -29,40 +31,98 @@ public class HandleVersion {
         for (int i = 0; i < excelVersions.length; i++) {
             String excelVersion = excelVersions[i];
             excelVersion = filterStr(excelVersion);
-
+            // 类型识别
+            int type = getVersionType(excelVersion);
             String[] versionStr = excelVersion.split(" ");
-            // before 2.1.6情况
-            if (versionStr.length == 2) {
+            switch (type) {
+            case 1:
+                // before 2.1.6情况
                 for (String string : versionList) {
                     if (compareVersion(string, versionStr[1]) < 0)
                         codeVersions.add(string);
                 }
-            }
-            // 2.4.x before 2.4.4 情况
-            if (versionStr.length == 3 && versionStr[1].equals("before")) {
+                break;
+            case 2:
+                // 2.4.x before 2.4.4 情况
                 for (String string : versionList) {
                     if (compareVersion(string, versionStr[0]) == 0
                             && compareVersion(string, versionStr[2]) < 0)
                         codeVersions.add(string);
                 }
-            }
-            // 2.2.x through 2.3.6 情况 // *
-            if (versionStr.length == 3 && versionStr[1].equals("through")) {
+                break;
+            case 3:
+                // through 2.3.6 情况
+                for (String string : versionList) {
+                    if (compareVersion(string, versionStr[1]) <= 0)
+                        codeVersions.add(string);
+                }
+                break;
+            case 4:
+                // 2.2.x through 2.3.6 情况
                 for (String string : versionList) {
                     if (compareVersion(string, versionStr[0]) == 0
                             || compareVersion(string, versionStr[2]) == 0)
                         codeVersions.add(string);
                 }
-            }
-            // through 2.3.6 情况 // *
-            if (versionStr.length == 2 && versionStr[0].equals("through")) {
+                break;
+            case 5:
+                // 2.1.4 earlier情况
                 for (String string : versionList) {
-                    if (compareVersion(string, versionStr[1]) <= 0)
+                    if (compareVersion(string, versionStr[0]) <= 0)
                         codeVersions.add(string);
                 }
+                break;
+            default:
+                return null;
             }
         }
         return codeVersions;
+    }
+
+    /**
+     * 对应关系： 1：before 2.1.6； 2：2.4.x before 2.4.4； 3：through 1.1.3； 4：2.2.x
+     * through 2.3.x； 5：2.1.4 earlier；
+     * 
+     * @param versionStr
+     * @return 编码
+     */
+    int getVersionType(String versionStr) {
+        int type = 0;
+
+        Pattern pa_beA = Pattern.compile(Common.re_beforeA, Pattern.MULTILINE);
+        Matcher ma_beA = pa_beA.matcher(versionStr);
+        if (ma_beA.find()) {
+            type = 1;
+            return type;
+        }
+
+        Pattern pa_AbeB = Pattern.compile(Common.re_AbeforeB, Pattern.MULTILINE);
+        Matcher ma_AbeB = pa_AbeB.matcher(versionStr);
+        if (ma_AbeB.find()) {
+            type = 2;
+            return type;
+        }
+
+        Pattern pa_thA = Pattern.compile(Common.re_throughA, Pattern.MULTILINE);
+        Matcher ma_thA = pa_thA.matcher(versionStr);
+        if (ma_thA.find()) {
+            type = 3;
+            return type;
+        }
+
+        Pattern pa_AthB = Pattern.compile(Common.re_AthroughB, Pattern.MULTILINE);
+        Matcher ma_AthB = pa_AthB.matcher(versionStr);
+        if (ma_AthB.find()) {
+            type = 4;
+            return type;
+        }
+        Pattern pa_earlier = Pattern.compile(Common.re_earlier, Pattern.MULTILINE);
+        Matcher ma_earlier = pa_earlier.matcher(versionStr);
+        if (ma_earlier.find()) {
+            type = 5;
+            return type;
+        }
+        return type;
     }
 
     /**
@@ -121,12 +181,12 @@ public class HandleVersion {
 
     public static void main(String[] args) throws Exception {
         DealSoftware dealSoftware = new DealSoftware();
-        String all = "before 2.1.6";
-        // String before = "before 2.1.6";
-        // String through = "2.2.x through 2.3.x";
-        // String abeforeB = "and 2.4.x before 2.4.15";
-        String test2 = "through 2.1.6";
-        String test1 = "2.x before 2.2.7";
+        String test1 = "before 2.1.6";
+        String test4 = "2.2.x through 2.3.x";
+        String test2 = "2.x before 2.4.15";
+        String test3 = "and through 2.1.6";
+        String test5 = "2.1.6 and earlier";
+        String all = "before 0.5.6, and 2.2.x through 2.3.x, and 2.4.x before 2.4.4";
         String Codepath = "C:\\Users\\wt\\Desktop\\tyy\\software\\";
         String versionPrefix = "ffmpeg-";
         String software = "ffmpeg";
@@ -136,11 +196,10 @@ public class HandleVersion {
         fileList = checkDiff.getFileVersions(fileList, versionPrefix);
         System.out.println(fileList.size() + "\nbegin");
 
-        ArrayList<String> versions = handleVersion.getCodeVersion(fileList, test2);
+        ArrayList<String> versions = handleVersion.getCodeVersion(fileList, all);
         for (String string : versions) {
             System.out.println(string);
         }
-        // System.out.println(handleVersion.compareVersion("2.1", "2.1.4"));
         System.out.println(versions.size() + "end");
     }
 }

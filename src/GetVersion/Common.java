@@ -12,12 +12,15 @@ public class Common {
     public static String re_version_x = "(([0-9]+\\.)*[0-9]+\\.)*([0-9]+|x)";
     public static String re_throughA = re_begin + "through\\s" + re_version + re_end;
 
-    public static String re_AthroughB = re_begin + re_version_x + "\\sthrough\\s" + re_version
+    public static String re_AthroughB = re_begin + re_version_x + "\\sthrough\\s" + re_version_x
             + re_end;
     public static String re_beforeA = re_begin + "before\\s" + re_version + re_end;
     public static String re_AbeforeB = re_begin + re_version_x + "\\sbefore\\s" + re_version
             + re_end;
     public static String re_earlier = re_begin + re_version + "\\searlier" + re_end;
+
+    public static String functionNameIsNull = "functionName is null";
+    public static String reuseCode = "reuseCode";
 
     public String getCodefilePath(String codePath, String versionPrefix, String version,
             String fileName) {
@@ -39,8 +42,8 @@ public class Common {
      *            漏洞函数名
      * @return 返回路径 如：
      */
-    public String getMarkFunctionPath(String path, String cve, String functionName) {
-        return path + File.separator + cve + File.separator + functionName + File.separator;
+    public String getMarkFunctionPath(String path, String software, String cve, String functionName) {
+        return path + File.separator + reuseCode + File.separator + cve + File.separator + software
+                + File.separator + functionName + File.separator;
     }
-
 }

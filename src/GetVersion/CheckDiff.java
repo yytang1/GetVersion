@@ -52,6 +52,9 @@ public class CheckDiff {
     public ArrayList<String> getVersionContainDiff(String cve, String codepath,
             String versionPrefix, String fileName, ArrayList<String> versionList, boolean isOld) {
         ArrayList<String> diffStrList = handDiff.handleDiff(cve, fileName, isOld);
+        if (diffStrList == null) {
+            return null;
+        }
         ArrayList<String> versionsTrue = new ArrayList<String>();
         if (diffStrList.size() < 1) {
             return versionsTrue;

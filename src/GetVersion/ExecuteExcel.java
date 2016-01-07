@@ -1,5 +1,6 @@
 package GetVersion;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -21,6 +22,7 @@ public class ExecuteExcel {
         ArrayList<VulnerInfo> vulnerInfos = vulnerabilityInfo.readInfoFromExcel(excelPath);
         // 复用实例代码存放路径
         String resultPath = excelPath.substring(0, excelPath.lastIndexOf("\\"));
+        System.out.println(utils.deleteFileOrDir(resultPath + File.separator + Common.reuseCode));
 
         for (VulnerInfo vulnerInfo : vulnerInfos) {
             String versionPrefix = vulnerInfo.softeware + "-";
@@ -30,6 +32,7 @@ public class ExecuteExcel {
                 vulnerInfo.report += "\t该diff文件不存在";
                 continue;
             }
+            String codePathTemp = codePath + File.separator + vulnerInfo.softeware;
             // 源码所有版本文件名列
             ArrayList<String> fileList = dealSoftware.getFileName(codePath, vulnerInfo.softeware);
             // 源码所有版本列
@@ -37,22 +40,35 @@ public class ExecuteExcel {
             // 满足区间条件的版本列
             ArrayList<String> versions = handleVersion.getCodeVersion(versionList,
                     vulnerInfo.softwareVersion);
+            if (versions == null) {
+                vulnerInfo.report += "Software version出错，请注意检查";
+                continue;
+            }
 
             // 获取文件存在的版本列
-            vulnerInfo.existVersions = checkDiff.getVersionFileExist(codePath, versionPrefix,
+            vulnerInfo.existVersions = checkDiff.getVersionFileExist(codePathTemp, versionPrefix,
                     vulnerInfo.fileName, versions);
-
-            vulnerInfo.containVersions = checkDiff.getVersionContainDiff(diffFilePath, codePath,
-                    versionPrefix, vulnerInfo.fileName, vulnerInfo.existVersions, true);
-            vulnerInfo.errorVersions = checkDiff.getVersionContainDiff(diffFilePath, codePath,
+            System.out.println(vulnerInfo.existVersions);
+            ArrayList<String> containVersions = checkDiff.getVersionContainDiff(diffFilePath,
+                    codePathTemp, versionPrefix, vulnerInfo.fileName, vulnerInfo.existVersions,
+                    true);
+            if (containVersions == null) {
+                vulnerInfo.report += "diff文件读取出错，请检查diff文件;";
+                continue;
+            }
+            vulnerInfo.containVersions = containVersions;
+            vulnerInfo.errorVersions = checkDiff.getVersionContainDiff(diffFilePath, codePathTemp,
                     versionPrefix, vulnerInfo.fileName, vulnerInfo.existVersions, false);
 
             // 针对同一漏洞的代码复用实例的获取
+            System.out.println(versions + "end");
+            System.out.println("containVersions" + vulnerInfo.containVersions + "end");
+
             versions.removeAll(vulnerInfo.containVersions);
             versions.removeAll(vulnerInfo.errorVersions);
             Collections.reverse(versions);
-            codeReuse.getHalfMatchFile(diffFilePath, codePath, versionPrefix, vulnerInfo, versions,
-                    resultPath);
+            vulnerInfo.reuseVersions = codeReuse.getHalfMatchFile(diffFilePath, codePathTemp,
+                    versionPrefix, vulnerInfo, versions, resultPath);
 
         }
         printResult(vulnerInfos);
@@ -70,12 +86,12 @@ public class ExecuteExcel {
     }
 
     public static void main(String[] args) throws Exception {
-        // String path = "C:\\Users\\wt\\Desktop\\实验室work-tyy\\";
-        String path = "C:\\Users\\yytang\\Desktop\\all\\";
-        String diffPath1 = path + "Ffmpeg-1.1diff";
-        // String codePath1 = "C:\\Users\\wt\\Desktop\\ffmpeg";
-        String codePath1 = path + "tar文件";
-        String excelPath1 = path + "test.xlsx";
+        String path = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\";
+
+        String diffPath1 = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg-最终核对数据-测试集\\Ffmpeg补丁文件-2016.1.1";
+        String codePath1 = "C:\\Users\\wt\\Desktop\\tyy\\software";
+        String excelPath1 = path + "getContainVersion\\testall.xlsx";
+        String excelPath2 = path + "getContainVersion\\testTemp.xls";
         ExecuteExcel executeExcel = new ExecuteExcel();
         executeExcel.executeExcel(diffPath1, codePath1, excelPath1);
         System.out.println("end");

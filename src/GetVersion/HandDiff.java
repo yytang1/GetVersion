@@ -51,14 +51,16 @@ public class HandDiff {
                     }
                     while (i < strs.length && !strs[i].contains("@@")) {
                         String temp = strs[i];
+
                         if (strs[i].contains("Index:") || strs[i].contains("@@"))
                             break;
-                        if (temp.subSequence(0, 1).equals(plus)) {
-                            i++;
-                            continue;
-                        } else
-                            temp = temp.substring(1);
-
+                        if (temp.length() > 0) {
+                            if (temp.subSequence(0, 1).equals(plus)) {
+                                i++;
+                                continue;
+                            } else
+                                temp = temp.substring(1);
+                        }
                         strFilter += (strFilter.length() > 0 ? "\n" + temp : temp);
                         i++;
                     }

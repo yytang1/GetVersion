@@ -19,6 +19,10 @@ public class CodeReuse {
     public String getFunction(String filePath, String functionName) {
         // 读取文件源码
         String code = utils.readText(filePath);
+        if (functionName.equals(Common.functionNameIsNull)) {
+            return code;
+        }
+
         String function = "";
         String re = "^[\\w\\s]+[\\s\\*]+" + functionName
         // + "\\s*\\([\\w\\[\\w\\]*\\s\\*\\,]*\\)\\s*\\{";
@@ -47,11 +51,18 @@ public class CodeReuse {
         return function;
     }
 
-    public String getHalfMatchFile(String diffFilePath, String codePath, String versionPrefix,
-            VulnerInfo vulnerInfo, ArrayList<String> versions, String resultPath) {
+    public ArrayList<String> getHalfMatchFile(String diffFilePath, String codePath,
+            String versionPrefix, VulnerInfo vulnerInfo, ArrayList<String> versions,
+            String resultPath) {
         String result = "";
-
-        String[] functionList = vulnerInfo.functionName.split("[,，]");
+        ArrayList<String> reuseCodeList = new ArrayList<String>();
+        ArrayList<String> reuseVersionList = new ArrayList<String>();
+        String[] functionList = null;
+        if (vulnerInfo.functionName == null) {
+            functionList = new String[] { "functionName is null" };
+        } else {
+            functionList = vulnerInfo.functionName.split("[,，]");
+        }
         System.out.println(Arrays.toString(functionList));
         // 获取diff文件
         ArrayList<String> diffList = handDiff.handleDiff(diffFilePath, vulnerInfo.fileName, true);
@@ -66,13 +77,17 @@ public class CodeReuse {
                 String functionPath = common.getCodefilePath(codePath, versionPrefix, version,
                         vulnerInfo.fileName);
                 String functionCode = getFunction(functionPath, functionName);
-                String path = common.getMarkFunctionPath(resultPath, vulnerInfo.cve, functionName);
+                String path = common.getMarkFunctionPath(resultPath, vulnerInfo.softeware,
+                        vulnerInfo.cve,
+                        functionName.equals(Common.functionNameIsNull) ? vulnerInfo.fileName
+                                : functionName);
                 // 找到不完全匹配的函数
                 int flag = 0;
                 for (String diffStr : diffList) {
                     String markFunction = matchDiffLine(functionCode, diffStr);
                     // 存在不完全匹配的函数，将不完全匹配的函数，存到txt中
-                    if (markFunction.contains(common.markStr)) {
+                    if (markFunction.contains(common.markStr)
+                            && !reuseCodeList.contains(markFunction)) {
                         num++;
                         new File(path).mkdirs();
                         String filePath = path + version + ".txt";
@@ -81,12 +96,14 @@ public class CodeReuse {
                         filePath = flag > 0 ? (path + version + "(" + flag + ").txt") : path
                                 + version + ".txt";
                         utils.writeText(markFunction, filePath, false);
+                        reuseCodeList.add(markFunction);
+                        reuseVersionList.add(version);
                         System.out.println(filePath);
                     }
                 }
             }
         }
-        return result;
+        return reuseVersionList;
     }
 
     public String matchDiffLine(String funciton, String diff) {
