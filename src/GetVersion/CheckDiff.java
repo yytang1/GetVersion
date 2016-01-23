@@ -3,6 +3,8 @@ package GetVersion;
 import java.io.File;
 import java.util.ArrayList;
 
+import GetVersion.VulnerabilityInfo.VulnerInfo;
+
 public class CheckDiff {
 
     Utils utils = new Utils();
@@ -18,12 +20,26 @@ public class CheckDiff {
         return versionLists;
     }
 
-    private String getCodeFile(String versionPrefix, String codepath, String version,
-            String fileName) {
+    public String getCodeFile(String versionPrefix, String codepath, String version, String fileName) {
         String content = "";
         String path = common.getCodefilePath(codepath, versionPrefix, version, fileName);
         content = utils.readText(path);
+        content = handleCode(content);
         return content;
+    }
+
+    String handleCode(String code) {
+        String temp = "";
+        code = common.handleLineBreak(code);
+        String[] codeList = code.trim().split("\n");
+        for (String string : codeList) {
+            String codesLine = string;
+            if (string.length() > 0) {
+                codesLine = string.trim();
+            }
+            temp += (temp.length() > 0 ? "\n" + codesLine : codesLine);
+        }
+        return temp;
     }
 
     public ArrayList<String> getVersionFileExist(String codePath, String versionPrefix,
@@ -31,8 +47,9 @@ public class CheckDiff {
         ArrayList<String> versionsTrue = new ArrayList<String>();
         for (String version : versionList) {
             String filePath = common.getCodefilePath(codePath, versionPrefix, version, fileName);
-            if (utils.fileExist(filePath))
+            if (filePath.length() > 0) {
                 versionsTrue.add(version);
+            }
         }
         return versionsTrue;
     }
@@ -50,8 +67,9 @@ public class CheckDiff {
      * @return 满足条件的版本列
      */
     public ArrayList<String> getVersionContainDiff(String cve, String codepath,
-            String versionPrefix, String fileName, ArrayList<String> versionList, boolean isOld) {
-        ArrayList<String> diffStrList = handDiff.handleDiff(cve, fileName, isOld);
+            String versionPrefix, VulnerInfo vulnerInfo, boolean isOld) {
+        ArrayList<String> diffStrList = handDiff.handleDiff(cve, vulnerInfo.fileName,
+                vulnerInfo.functionName, isOld);
         if (diffStrList == null) {
             return null;
         }
@@ -60,9 +78,12 @@ public class CheckDiff {
             return versionsTrue;
         }
         int flag = 1;
-        for (String version : versionList) {
+        for (String version : vulnerInfo.existVersions) {
+            if (version.endsWith("1.0")) {
+                System.out.println("1.0");
+            }
             flag = 1;
-            String codeStr = getCodeFile(versionPrefix, codepath, version, fileName);
+            String codeStr = getCodeFile(versionPrefix, codepath, version, vulnerInfo.fileName);
             for (String diffStr : diffStrList)
                 if (!codeStr.contains(diffStr)) {
                     flag = 0;
@@ -79,15 +100,15 @@ public class CheckDiff {
         DealSoftware dealSoftware = new DealSoftware();
         // TODO Auto-generated method stub
         // String codepath = "C:\\Users\\wt\\Desktop\\ffmpeg";
-        String codepath2 = "C:\\Users\\yytang\\Desktop\\all\\tar文件";
+        String codepath2 = "C:\\Users\\wt\\Desktop\\tyy\\software\\ffmpeg";
         // excel 中 获取的函数文件名
-        String filePath = "libavcodec\\flashsv.c";
+        String filePath = "libavcodec\\huffyuv.c";
         // String diffPath =
         // "C:\\Users\\wt\\Desktop\\实验室work-tyy\\需完成的工作\\测试数据\\Ffmpeg\\Ffmpeg-1.1diff";
-        String diffPath2 = "C:\\Users\\yytang\\Desktop\\all\\Ffmpeg-1.1diff";
+        String diffPath2 = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg复用代码获取程序修改\\Ffmpeg补丁文件-新";
         // String cve = diffPath2 + File.separator + "CVE-2013-7015.txt";
         // 多个函数测试
-        String cve2 = diffPath2 + File.separator + "CVE-2013-7023.txt";
+        String cve2 = diffPath2 + File.separator + "CVE-2013-0848.txt";
         String versionPrefix = "ffmpeg-";
         System.out.println("begin");
         CheckDiff checkDiff = new CheckDiff();
@@ -95,14 +116,17 @@ public class CheckDiff {
         ArrayList<String> fileList = dealSoftware.getFileName(codepath2, software);
         ArrayList<String> versionList = checkDiff.getFileVersions(fileList, versionPrefix);
         // 满足区间条件的版本列
-
+        VulnerabilityInfo.VulnerInfo vulnerInfo = new VulnerInfo();
+        vulnerInfo.existVersions = versionList;
+        vulnerInfo.fileName = filePath;
         ArrayList<String> versions = checkDiff.getVersionContainDiff(cve2, codepath2,
-                versionPrefix, filePath, versionList, false);
+                versionPrefix, vulnerInfo, false);
         System.out.println(versions.size() + "end");
         System.out.println(versions);
         ArrayList<String> versions2 = checkDiff.getVersionContainDiff(cve2, codepath2,
-                versionPrefix, filePath, versionList, true);
+                versionPrefix, vulnerInfo, true);
         System.out.println(versions2.size() + "end");
         System.out.println(versions2);
+        System.out.println(checkDiff.getCodeFile(versionPrefix, codepath2, "1.0", filePath));
     }
 }

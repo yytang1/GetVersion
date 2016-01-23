@@ -50,15 +50,14 @@ public class ExecuteExcel {
                     vulnerInfo.fileName, versions);
             System.out.println(vulnerInfo.existVersions);
             ArrayList<String> containVersions = checkDiff.getVersionContainDiff(diffFilePath,
-                    codePathTemp, versionPrefix, vulnerInfo.fileName, vulnerInfo.existVersions,
-                    true);
+                    codePathTemp, versionPrefix, vulnerInfo, true);
             if (containVersions == null) {
                 vulnerInfo.report += "diff文件读取出错，请检查diff文件;";
                 continue;
             }
             vulnerInfo.containVersions = containVersions;
             vulnerInfo.errorVersions = checkDiff.getVersionContainDiff(diffFilePath, codePathTemp,
-                    versionPrefix, vulnerInfo.fileName, vulnerInfo.existVersions, false);
+                    versionPrefix, vulnerInfo, false);
 
             // 针对同一漏洞的代码复用实例的获取
             System.out.println(versions + "end");
@@ -89,11 +88,13 @@ public class ExecuteExcel {
         String path = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\";
 
         String diffPath1 = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg-最终核对数据-测试集\\Ffmpeg补丁文件-2016.1.1";
+        String diffPath2 = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg复用代码获取程序修改\\Ffmpeg补丁文件-新";
         String codePath1 = "C:\\Users\\wt\\Desktop\\tyy\\software";
         String excelPath1 = path + "getContainVersion\\testall.xlsx";
         String excelPath2 = path + "getContainVersion\\testTemp.xls";
+        String excelPath3 = path + "getContainVersion\\2016.1.16-Ffmpeg漏洞信息-新.xls";
         ExecuteExcel executeExcel = new ExecuteExcel();
-        executeExcel.executeExcel(diffPath1, codePath1, excelPath1);
+        executeExcel.executeExcel(diffPath2, codePath1, excelPath2);
         System.out.println("end");
     }
 }

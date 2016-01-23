@@ -2,6 +2,8 @@ package GetVersion;
 
 import java.io.File;
 
+import CodeReuse.FindFile;
+
 public class Common {
     public String markStr = "//***\r\n";
     public int txtMaxNum = 10;
@@ -24,7 +26,21 @@ public class Common {
 
     public String getCodefilePath(String codePath, String versionPrefix, String version,
             String fileName) {
-        return codePath + File.separator + versionPrefix + version + File.separator + fileName;
+        String path1 = codePath + File.separator + versionPrefix + version + File.separator
+                + fileName;
+        String path2 = codePath + File.separator + versionPrefix + version;
+        Utils utils = new Utils();
+        if (utils.fileExist(path1)) {
+            return path1;
+        } else {
+            FindFile findFile = new FindFile();
+            File folder = new File(path2);
+            File[] result = findFile.searchFile(folder, fileName);
+            if (result.length == 1) {
+                return result[0].getAbsolutePath();
+            }
+        }
+        return "";
     }
 
     public String getDifftxtPath(String diffPath, String cve) {
@@ -45,5 +61,19 @@ public class Common {
     public String getMarkFunctionPath(String path, String software, String cve, String functionName) {
         return path + File.separator + reuseCode + File.separator + cve + File.separator + software
                 + File.separator + functionName + File.separator;
+    }
+
+    /**
+     * 将window下换行符“\r\n”替换为“\n”
+     * 
+     * @param string
+     *            需要处理的字符串
+     * @return
+     */
+    public String handleLineBreak(String string) {
+        if (string.contains("\r\n")) {
+            string = string.replace("\r\n", "\n");
+        }
+        return string;
     }
 }

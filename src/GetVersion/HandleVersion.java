@@ -27,7 +27,15 @@ public class HandleVersion {
         ArrayList<String> codeVersions = new ArrayList<String>();
         // 无意义字符处理 String test = "2.0.0";
         // 多个版本区间，逗号划分
-        String[] excelVersions = excelVersionStr.split(",");
+        String[] excelVersions = null;
+        if (!excelVersionStr.contains(",") && !excelVersionStr.contains("，")
+                && excelVersionStr.contains("and") && !excelVersionStr.contains("earlier")) {
+            excelVersions = excelVersionStr.split("and");
+
+        } else {
+            excelVersions = excelVersionStr.split(",|，");
+
+        }
         for (int i = 0; i < excelVersions.length; i++) {
             String excelVersion = excelVersions[i];
             excelVersion = filterStr(excelVersion);
@@ -186,7 +194,7 @@ public class HandleVersion {
         String test2 = "2.x before 2.4.15";
         String test3 = "and through 2.1.6";
         String test5 = "2.1.6 and earlier";
-        String all = "before 0.5.6, and 2.2.x through 2.3.x, and 2.4.x before 2.4.4";
+        String all = "before 0.5.6 and 2.2.x through 2.3.x";
         String Codepath = "C:\\Users\\wt\\Desktop\\tyy\\software\\";
         String versionPrefix = "ffmpeg-";
         String software = "ffmpeg";

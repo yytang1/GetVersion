@@ -54,7 +54,6 @@ public class CodeReuse {
     public ArrayList<String> getHalfMatchFile(String diffFilePath, String codePath,
             String versionPrefix, VulnerInfo vulnerInfo, ArrayList<String> versions,
             String resultPath) {
-        String result = "";
         ArrayList<String> reuseCodeList = new ArrayList<String>();
         ArrayList<String> reuseVersionList = new ArrayList<String>();
         String[] functionList = null;
@@ -65,7 +64,8 @@ public class CodeReuse {
         }
         System.out.println(Arrays.toString(functionList));
         // 获取diff文件
-        ArrayList<String> diffList = handDiff.handleDiff(diffFilePath, vulnerInfo.fileName, true);
+        ArrayList<String> diffList = handDiff.handleDiff(diffFilePath, vulnerInfo.fileName,
+                vulnerInfo.functionName, true);
 
         for (String functionName : functionList) {
             System.out.println(functionName);
@@ -77,6 +77,9 @@ public class CodeReuse {
                 String functionPath = common.getCodefilePath(codePath, versionPrefix, version,
                         vulnerInfo.fileName);
                 String functionCode = getFunction(functionPath, functionName);
+                if (functionCode.length() > 0) {
+                    System.out.println(functionPath);
+                }
                 String path = common.getMarkFunctionPath(resultPath, vulnerInfo.softeware,
                         vulnerInfo.cve,
                         functionName.equals(Common.functionNameIsNull) ? vulnerInfo.fileName
@@ -109,7 +112,7 @@ public class CodeReuse {
     public String matchDiffLine(String funciton, String diff) {
         String markFunction = "";
         String[] functionList = funciton.trim().split("\n");
-        diff = handDiff.handleLineBreak(diff);
+        diff = common.handleLineBreak(diff);
         String[] diffList = diff.trim().split("\n");
         for (String string : diffList) {
             String temp = string.trim();
@@ -138,7 +141,7 @@ public class CodeReuse {
         String function = codeReuse.getFunction(path + fileName, functionName);
         System.out.println(function);
         // 获取diff文件
-        ArrayList<String> diffList = handDiff.handleDiff(diffPath, fileName, true);
+        ArrayList<String> diffList = handDiff.handleDiff(diffPath, fileName, functionName, true);
 
         String returnStr = codeReuse.matchDiffLine(function, diffList.get(0));
         System.out.println(returnStr);

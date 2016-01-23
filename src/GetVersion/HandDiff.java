@@ -2,12 +2,15 @@ package GetVersion;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HandDiff {
     Utils utils = new Utils();
+    Common common = new Common();
 
     boolean matchCode(String diffPath, String codePath, String fileName) {
-        ArrayList<String> diffStrList = handleDiff(diffPath, fileName, false);
+        ArrayList<String> diffStrList = handleDiff(diffPath, fileName, null, false);
         String codeStr = utils.readText(codePath);
         // TODO check是否包含该漏洞
         for (String string : diffStrList) {
@@ -28,14 +31,15 @@ public class HandDiff {
      * @return 文件名对应下的函数列
      */
     // diff文件多函数处理，提取代码列
-    public ArrayList<String> handleDiff(String filePath, String fileName, boolean isOld) {
+    public ArrayList<String> handleDiff(String filePath, String fileName, String functionName,
+            boolean isOld) {
         ArrayList<String> strFilterList = new ArrayList<String>();
         // 文件名处理：
         fileName = fileName.replace("\\", "/");
         // 如果isOld，则去掉"+"行
         String plus = (isOld ? "+" : "-");
         String strOriginal = utils.readText(filePath);
-        strOriginal = handleLineBreak(strOriginal);
+        strOriginal = common.handleLineBreak(strOriginal);
         String[] strs = strOriginal.split("\n");
         for (int i = 0; i < strs.length; i++) {
             // 一个diff匹配 @@ 划分
@@ -52,7 +56,8 @@ public class HandDiff {
                     while (i < strs.length && !strs[i].contains("@@")) {
                         String temp = strs[i];
 
-                        if (strs[i].contains("Index:") || strs[i].contains("@@"))
+                        if (strs[i].contains("Index:") || strs[i].contains("@@")
+                                || strs[i].contains("diff --git"))
                             break;
                         if (temp.length() > 0) {
                             if (temp.subSequence(0, 1).equals(plus)) {
@@ -61,9 +66,10 @@ public class HandDiff {
                             } else
                                 temp = temp.substring(1);
                         }
-                        strFilter += (strFilter.length() > 0 ? "\n" + temp : temp);
+                        strFilter += (strFilter.length() > 0 ? "\n" + temp.trim() : temp.trim());
                         i++;
                     }
+                    strFilter = handleFunction(strFilter, functionName);
                     strFilterList.add(strFilter);
                 }
 
@@ -72,25 +78,24 @@ public class HandDiff {
         return strFilterList;
     }
 
-    /**
-     * 将window下换行符“\r\n”替换为“\n”
-     * 
-     * @param string
-     *            需要处理的字符串
-     * @return
-     */
-    public String handleLineBreak(String string) {
-        if (string.contains("\r\n")) {
-            string = string.replace("\r\n", "\n");
+    String handleFunction(String function, String functionName) {
+        if (functionName == null || functionName.contains(",|，") || functionName.length() < 0) {
+            return function;
         }
-        return string;
+        String re = "^[\\w\\s]+[\\s\\*]+" + functionName + "\\s*\\([\\s\\S]*?\\)\\s*\\{";
+        Pattern pattern = Pattern.compile(re, Pattern.MULTILINE);
+        Matcher matcher = pattern.matcher(function);
+        if (matcher.find()) {
+            function = function.substring(matcher.start()).trim();
+        }
+        return function;
     }
 
     public static void main(String[] args) {
         // TODO Auto-generated method stub
         HandDiff handDiff = new HandDiff();
         ;
-        String diffPath2 = "C:\\Users\\yytang\\Desktop\\all\\Ffmpeg-1.1diff";
+        String diffPath2 = "C:\\Users\\wt\\Desktop\\tyy\\实验室work-tyy\\Ffmpeg复用代码获取程序修改\\Ffmpeg补丁文件-新";
         // String diffPath1 =
         // "C:\\Users\\wt\\Desktop\\实验室work-tyy\\Ffmpeg-1.1diff";
         // 多个函数
@@ -101,15 +106,15 @@ public class HandDiff {
         // String cve4 = "CVE-2013-2912.txt";
         // String cve5 = "CVE-2013-2911.txt";
         // String cve = "CVE-2013-7015.txt";
-        String cve6 = "CVE-2011-3936.txt";
-        String fileName6 = "libavformat/dv.c";
+        String cve6 = "CVE-2012-2791.txt";
+        String fileName6 = "libavcodec/indeo4.c";
         String fileName = "libavcodec/flashsv.c";
+        String functionName = "";
         // String fileName2 = "Source/core/xml/XSLStyleSheetLibxslt.cpp";
         // String fileName3 =
         // "content\\renderer\\pepper\\pepper_in_process_router.cc";
-        System.out.println(fileName);
         ArrayList<String> diffList = handDiff.handleDiff(diffPath2 + File.separator + cve6,
-                fileName6, true);
+                fileName6, functionName, true);
         System.out.println(diffList.size());
         int i = 0;
         for (String string : diffList) {
@@ -118,7 +123,7 @@ public class HandDiff {
             i++;
         }
         ArrayList<String> diffList2 = handDiff.handleDiff(diffPath2 + File.separator + cve6,
-                fileName6, false);
+                fileName6, functionName, false);
         System.out.println(diffList2.size());
         i = 0;
         for (String string : diffList2) {
