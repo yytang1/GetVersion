@@ -50,9 +50,10 @@ public class HandDiff {
                 while (i < strs.length && strs[i].contains("@@")) {
                     String strFilter = "";
                     i++;
-                    if (strs[i].contains("}")) {
-                        i++;
-                    }
+
+                    // if (strs[i].contains("}")) {
+                    // i++;
+                    // }
                     while (i < strs.length && !strs[i].contains("@@")) {
                         String temp = strs[i];
 
@@ -79,7 +80,7 @@ public class HandDiff {
     }
 
     String handleFunction(String function, String functionName) {
-        if (functionName == null || functionName.contains(",|，") || functionName.length() < 0) {
+        if (functionName == null || functionName.contains(",|，") || functionName.length() <= 0) {
             return function;
         }
         String re = "^[\\w\\s]+[\\s\\*]+" + functionName + "\\s*\\([\\s\\S]*?\\)\\s*\\{";
@@ -106,8 +107,8 @@ public class HandDiff {
         // String cve4 = "CVE-2013-2912.txt";
         // String cve5 = "CVE-2013-2911.txt";
         // String cve = "CVE-2013-7015.txt";
-        String cve6 = "CVE-2012-2791.txt";
-        String fileName6 = "libavcodec/indeo4.c";
+        String cve6 = "CVE-2014-9316.txt";
+        String fileName6 = "libavcodec/mjpegdec.c";
         String fileName = "libavcodec/flashsv.c";
         String functionName = "";
         // String fileName2 = "Source/core/xml/XSLStyleSheetLibxslt.cpp";
